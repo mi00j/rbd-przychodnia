@@ -1,0 +1,38 @@
+db.WIZYTA.aggregate([{
+	"$match": {
+		"$and": [{
+			"pacjent.wiek": {
+				"$lt":80
+			}
+		}, {
+			"ocena.wartosc": {
+				"$gt": db.WIZYTA.aggregate([{
+					"$group": {
+						"_id": null,
+						"srednia": {
+							"$avg": "$ocena.wartosc"
+						}
+					}
+				}]).map(function(u) { return u.srednia })[0]
+			}
+		}
+		]
+	}
+}, {
+	"$group": {
+		"_id": {
+			"Imie": "$lekarz.imie",
+			"Nazwisko": "$lekarz.nazwisko",
+			"Specjalizacja": "$lekarz.specjalizacja.nazwa"
+		},
+		"Wizyty": {
+			"$sum": 1
+		}
+	}
+},{
+	"$sort": {
+		"Wizyty": -1
+	}
+},{
+	"$limit": 100
+}])
